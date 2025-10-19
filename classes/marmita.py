@@ -1,5 +1,7 @@
 from ingrediente import Ingrediente
 
+
+
 class Marmita:
     def __init__(self, ID: int, ingredientes: list, preco_venda: float, quantidade_ingredientes: dict, custo_estimado: float):
         self.ID = ID
