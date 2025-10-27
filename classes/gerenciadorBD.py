@@ -149,8 +149,31 @@ class GerenciadorBD():
         conn = sqlite3.connect(self.DATA_FILE)
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
+
+        #captura do ID, data e valor total de cada compra
         cursor.execute('SELECT * FROM Compras')
         compras = [dict(row) for row in cursor.fetchall()]
+
+        #para cada um dos registros de compra, captura os ingredientes associados
+        for compra in compras:
+            cursor.execute('''
+                SELECT ci.id_ingrediente, ci.preco_compra
+                FROM compra_ingredientes ci
+                WHERE ci.id_compra = ?
+            ''', (compra['id_compra'],))
+            ingredientes = [row['id_ingrediente'] for row in cursor.fetchall()]
+            
+            cursor.execute('''
+                SELECT ci.id_ingrediente, ci.preco_compra
+                FROM compra_ingredientes ci
+                WHERE ci.id_compra = ?
+            ''', (compra['id_compra'],))
+
+            preco_ingredientes = {row['id_ingrediente']: row['preco_compra'] for row in cursor.fetchall()}
+
+            compra['ingredientes'] = ingredientes
+            compra['preco_ingredientes'] = preco_ingredientes
+
         conn.close()
         return compras
     

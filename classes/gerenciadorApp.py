@@ -1,4 +1,4 @@
-from compra import Compra
+from compra import Compra, FactoryCompra
 from venda import Venda
 from marmita import Marmita
 from ingrediente import Ingrediente, FactoryIngrediente
@@ -12,20 +12,20 @@ class GerenciadorApp():
         ids = self.gerenciadorBD.getProximoID()
 
         self.FactoryIngrediente = FactoryIngrediente(ids['ingredientes'])
+        self.FactoryCompra = FactoryCompra(ids['compras'])
         # self.FactoryVenda = FactoryVenda(ids['vendas'])
         # self.FactoryMarmita = FactoryMarmita(ids['marmitas'])
-        # self.FactoryCompra = FactoryCompra(ids['compras'])
 
+        self.ingredientes = {}
         self.vendas = {}
         self.marmitas = {}
-        self.ingredientes = {}
         self.compras = {}
 
         # Carregar dados do banco de dados na memória
         self.LoadIngredientes()    
+        self.loadCompras()
         self.loadVendas()
         self.loadMarmitas()
-        self.loadCompras()
 
     def LoadIngredientes(self):
         # Carrega ingredientes do banco de dados para a memória
@@ -33,6 +33,14 @@ class GerenciadorApp():
         for ingredienteDict in ingredientesData:
             ingrediente = self.FactoryIngrediente.FromDB(ingredienteDict)
             self.ingredientes[ingrediente.ID] = ingrediente
+
+    def loadCompras(self):
+        # Carrega compras do banco de dados para a memória
+        comprasData = self.gerenciadorBD.getCompras()
+        for compraDict in comprasData:
+            compra = self.FactoryCompra.FromDB(compraDict)
+            self.compras[compra.ID] = compra
+        pass
 
     def loadVendas(self):
         # Carrega vendas do banco de dados para a memória
@@ -42,9 +50,6 @@ class GerenciadorApp():
         # Carrega marmitas do banco de dados para a memória
         pass
 
-    def loadCompras(self):
-        # Carrega compras do banco de dados para a memória
-        pass
 
 
     def CreateVendas(self):
