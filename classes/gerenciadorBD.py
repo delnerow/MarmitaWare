@@ -243,7 +243,21 @@ class GerenciadorBD():
             conn.close()
     
     def saveIngredientes(self, ingrediente):
-        pass
+        """Salva um novo ingrediente"""
+        conn = sqlite3.connect(self.DATA_FILE)
+        cursor = conn.cursor()
+        
+        try:
+            cursor.execute('''
+                INSERT INTO Ingredientes (nome_ingrediente, preco_compra, id_unidade)
+                VALUES (?, ?, ?)
+            ''', (ingrediente.nome, ingrediente.preco_compra, ingrediente.id_unidade))
+            conn.commit()
+        except sqlite3.IntegrityError as e:
+            conn.rollback()
+            raise e
+        finally:
+            conn.close()
     
     def saveCompras(self, compra):
         pass

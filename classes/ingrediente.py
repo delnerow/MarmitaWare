@@ -4,8 +4,29 @@ class FactoryIngrediente:
         # implementar o carregamento do último ID usado a partir do banco de dados
         self.next_ID = next_ID
 
-    def CreateIngrediente(self, nome: str, preco_compra: float, data_ultima_compra):
-        ingrediente = Ingrediente(self.next_ID, nome, preco_compra, data_ultima_compra)
+    def CreateIngrediente(self, nome: str, preco_compra: float, data_ultima_compra, id_unidade: int):
+        # Cria um novo ingrediente com um ID único
+        # implementa a regra de negócio para criação de ingredientes
+
+        # validações básicas
+        if nome is None or (isinstance(nome, str) and nome.strip() == ""):
+            raise ValueError("Nome do ingrediente não pode ser vazio.")
+
+        if preco_compra is None or (isinstance(preco_compra, str) and preco_compra.strip() == ""):
+            raise ValueError("Preço de compra não pode ser vazio.")
+
+        try:
+            preco_compra = float(preco_compra)
+        except (TypeError, ValueError):
+            raise ValueError("Preço de compra deve ser um número válido.")
+
+        if preco_compra < 0:
+            raise ValueError("Preço de compra não pode ser negativo.")
+
+        # normalização
+        nome = nome.strip() if isinstance(nome, str) else nome 
+
+        ingrediente = Ingrediente(self.next_ID, nome, preco_compra, data_ultima_compra, id_unidade)
         self.next_ID += 1
         return ingrediente
 
