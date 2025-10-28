@@ -1,6 +1,6 @@
 from compra import Compra, FactoryCompra
 from venda import Venda
-from marmita import Marmita
+from marmita import Marmita, FactoryMarmita
 from ingrediente import Ingrediente, FactoryIngrediente
 from gerenciadorBD import GerenciadorBD
 
@@ -13,8 +13,8 @@ class GerenciadorApp():
 
         self.FactoryIngrediente = FactoryIngrediente(ids['ingredientes'])
         self.FactoryCompra = FactoryCompra(ids['compras'])
+        self.FactoryMarmita = FactoryMarmita(ids['marmitas'])
         # self.FactoryVenda = FactoryVenda(ids['vendas'])
-        # self.FactoryMarmita = FactoryMarmita(ids['marmitas'])
 
         self.ingredientes = {}
         self.vendas = {}
@@ -24,8 +24,8 @@ class GerenciadorApp():
         # Carregar dados do banco de dados na memória
         self.LoadIngredientes()    
         self.loadCompras()
-        self.loadVendas()
         self.loadMarmitas()
+        self.loadVendas()
 
     def LoadIngredientes(self):
         # Carrega ingredientes do banco de dados para a memória
@@ -40,17 +40,17 @@ class GerenciadorApp():
         for compraDict in comprasData:
             compra = self.FactoryCompra.FromDB(compraDict)
             self.compras[compra.ID] = compra
-        pass
+
+    def loadMarmitas(self):
+        # Carrega marmitas do banco de dados para a memória
+        marmitasData = self.gerenciadorBD.getMarmitas()
+        for marmitaDict in marmitasData:
+            marmita = self.FactoryMarmita.FromDB(marmitaDict)
+            self.marmitas[marmita.ID] = marmita
 
     def loadVendas(self):
         # Carrega vendas do banco de dados para a memória
         pass
-
-    def loadMarmitas(self):
-        # Carrega marmitas do banco de dados para a memória
-        pass
-
-
 
     def CreateVendas(self):
         # Lógica para criar vendas usando FactoryVenda

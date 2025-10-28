@@ -125,14 +125,38 @@ class GerenciadorBD():
         return vendas
     
     def getMarmitas(self):
-        """Retorna todas as marmitas"""
+        """Retorna todas as marmitas com seus ingredientes"""
         conn = sqlite3.connect(self.DATA_FILE)
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
+        
+        # Captura todas as marmitas
         cursor.execute('SELECT * FROM Marmitas')
         marmitas = [dict(row) for row in cursor.fetchall()]
+        
+        # Para cada marmita, captura os ingredientes associados
+        for marmita in marmitas:
+            cursor.execute('''
+                SELECT im.id_ingrediente, im.quantidade, i.nome_ingrediente, i.preco_compra
+                FROM ingredientes_marmita im
+                INNER JOIN Ingredientes i ON im.id_ingrediente = i.id_ingrediente
+                WHERE im.id_marmita = ?
+            ''', (marmita['id_marmita'],))
+            
+            # Armazena os resultados para evitar consumir o cursor
+            resultados = cursor.fetchall()
+            
+            # Cria lista de IDs dos ingredientes
+            marmita['ingredientes'] = [row['id_ingrediente'] for row in resultados]
+            
+            # Cria dicionário com quantidade de cada ingrediente
+            marmita['quantidade_ingredientes'] = {
+                row['id_ingrediente']: row['quantidade'] 
+                for row in resultados
+            }        
         conn.close()
         return marmitas
+    
     
     def getIngredientes(self):
         """Retorna todos os ingredientes"""
@@ -162,7 +186,7 @@ class GerenciadorBD():
                 WHERE ci.id_compra = ?
             ''', (compra['id_compra'],))
             ingredientes = [row['id_ingrediente'] for row in cursor.fetchall()]
-            
+
             cursor.execute('''
                 SELECT ci.id_ingrediente, ci.preco_compra
                 FROM compra_ingredientes ci
