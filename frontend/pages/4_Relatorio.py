@@ -7,7 +7,7 @@ import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # --- Agora o resto dos seus imports vem aqui ---
-from classes.gerenciadorAppMock import GerenciadorAppMock as GerenciadorApp
+from gerenciadorAppMock import GerenciadorAppMock as GerenciadorApp
 import streamlit as st
 
 st.title("Aba de Relatório")

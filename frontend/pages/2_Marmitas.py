@@ -1,7 +1,7 @@
 # Dentro de pages/2_Marmitas.py
 import streamlit as st
 import pandas as pd
-from classes.gerenciadorAppMock import GerenciadorAppMock as GerenciadorApp
+from gerenciadorAppMock import GerenciadorAppMock as GerenciadorApp
 
 st.title("Aba de Marmitas")
 gerenciador = GerenciadorApp()
