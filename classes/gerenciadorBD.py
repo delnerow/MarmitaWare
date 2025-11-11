@@ -1,9 +1,9 @@
 import sqlite3
 import os
-from venda import Venda
-from marmita import Marmita
-from ingrediente import Ingrediente
-from compra import Compra
+from .venda import Venda
+from .marmita import Marmita
+from .ingrediente import Ingrediente
+from .compra import Compra
 
 class GerenciadorBD():
     _instance = None
