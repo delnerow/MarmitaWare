@@ -249,9 +249,9 @@ class GerenciadorBD():
         
         try:
             cursor.execute('''
-                INSERT INTO Ingredientes (nome_ingrediente, preco_compra, id_unidade)
-                VALUES (?, ?, ?)
-            ''', (ingrediente.nome, ingrediente.preco_compra, ingrediente.id_unidade))
+                INSERT INTO Ingredientes (nome_ingrediente, preco_compra, data_ultima_compra, id_unidade)
+                VALUES (?, ?, ?, ?)
+            ''', (ingrediente.nome, ingrediente.preco_compra, ingrediente.data_ultima_compra, ingrediente.id_unidade))
             conn.commit()
         except sqlite3.IntegrityError as e:
             conn.rollback()

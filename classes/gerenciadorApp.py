@@ -55,9 +55,9 @@ class GerenciadorApp():
             venda = self.FactoryVenda.FromDB(vendaDict)
             self.vendas[venda.ID] = venda
 
-    def CreateIngrediente(self, nome: str, preco_compra: float, id_unidade: int, data_ultima_compra = None):
+    def CreateIngrediente(self, nome: str, preco_compra: float, id_unidade: int):
         # Lógica para criar ingredientes usando FactoryIngrediente
-        ingrediente = self.FactoryIngrediente.CreateIngrediente(nome, preco_compra, data_ultima_compra, id_unidade)
+        ingrediente = self.FactoryIngrediente.CreateIngrediente(nome, preco_compra, id_unidade)
         # insere no banco de dados, caso respeite as regras de negócio
         self.gerenciadorBD.saveIngredientes(ingrediente)
         pass
