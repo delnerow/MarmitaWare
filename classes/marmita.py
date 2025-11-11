@@ -1,12 +1,12 @@
-from ingrediente import Ingrediente
+from .ingrediente import Ingrediente
 
 class FactoryMarmita:
     def __init__(self, next_ID: int):
         # implementar o carregamento do último ID usado a partir do banco de dados
         self.next_ID = next_ID
 
-    def CreateMarmita(self, ingredientes: list, preco_venda: float, quantidade_ingredientes: dict, custo_estimado: float):
-        marmita = Marmita(self.next_ID, ingredientes, preco_venda, quantidade_ingredientes, custo_estimado)
+    def CreateMarmita(self, ingredientes: list, preco_venda: float, quantidade_ingredientes: dict, custo_estimado: float, nome_marmita: str):
+        marmita = Marmita(self.next_ID, ingredientes, preco_venda, quantidade_ingredientes, custo_estimado, nome_marmita)
         self.next_ID += 1
         return marmita
 

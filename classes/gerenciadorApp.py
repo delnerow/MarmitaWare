@@ -1,8 +1,8 @@
-from compra import Compra, FactoryCompra
-from venda import Venda, FactoryVenda
-from marmita import Marmita, FactoryMarmita
-from ingrediente import Ingrediente, FactoryIngrediente
-from gerenciadorBD import GerenciadorBD
+from .compra import Compra, FactoryCompra
+from .venda import Venda, FactoryVenda
+from .marmita import Marmita, FactoryMarmita
+from .ingrediente import Ingrediente, FactoryIngrediente
+from .gerenciadorBD import GerenciadorBD
 
 
 class GerenciadorApp():
