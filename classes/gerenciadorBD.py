@@ -4,6 +4,7 @@ from .venda import Venda
 from .marmita import Marmita
 from .ingrediente import Ingrediente
 from .compra import Compra
+import pandas as pd
 
 class GerenciadorBD():
     _instance = None
@@ -352,3 +353,116 @@ class GerenciadorBD():
             return ids
         finally:
             conn.close()
+
+    def GetComprasTable(self):
+        """Retorna um pandas.DataFrame com colunas:
+        'ingredientes comprados' / 'valor total' / 'data'.
+        Usa uma consulta SQL para obter registros de compra x ingrediente,
+        depois faz groupby em pandas para agregar ingredientes por compra
+        e ordena por data.
+        """
+
+        conn = sqlite3.connect(self.DATA_FILE)
+        try:
+            query = """
+                SELECT c.id_compra,
+                       c.data_de_compra AS data,
+                       c.valor_total,
+                       i.nome_ingrediente
+                FROM Compras c
+                JOIN compra_ingredientes ci ON c.id_compra = ci.id_compra
+                JOIN Ingredientes i ON ci.id_ingrediente = i.id_ingrediente
+            """
+            df = pd.read_sql_query(query, conn)
+        finally:
+            conn.close()
+
+        # Se não houver resultados, retornar DataFrame vazio com as colunas solicitadas
+        if df.empty:
+            return pd.DataFrame(columns=['ingredientes comprados', 'valor total', 'data'])
+
+        # Agrupar por compra, concatenar nomes de ingredientes, pegar valor_total e data (primeiro)
+        grouped = (
+            df.groupby('id_compra', sort=False)
+              .agg({
+                  'nome_ingrediente': lambda s: ', '.join(s.astype(str).tolist()),
+                  'valor_total': 'first',
+                  'data': 'first'
+              })
+              .reset_index(drop=True)
+        )
+
+        # Renomear colunas para o formato pedido
+        grouped = grouped.rename(columns={
+            'nome_ingrediente': 'ingredientes comprados',
+            'valor_total': 'valor total',
+            'data': 'data'
+        })
+
+        # Garantir que 'data' seja datetime para ordenar corretamente
+        grouped['data'] = pd.to_datetime(grouped['data'], errors='coerce')
+
+        # Ordenar por data e resetar índice
+        grouped = grouped.sort_values(by='data').reset_index(drop=True)
+
+        return grouped
+
+    def GetMarmitasTable(self):
+        """Retorna um pandas.DataFrame com colunas:
+        'nome_marmita' / 'preco_venda' / 'custo_estimado' / 'ingredientes'
+        Cada linha tem os nomes dos ingredientes concatenados (sem usar ids).
+        """
+        conn = sqlite3.connect(self.DATA_FILE)
+        try:
+            query = """
+                SELECT m.id_marmita,
+                       m.nome_marmita,
+                       m.preco_venda,
+                       m.custo_estimado,
+                       i.nome_ingrediente,
+                       im.quantidade,
+                       u.sigla_unidade
+                FROM Marmitas m
+                LEFT JOIN ingredientes_marmita im ON m.id_marmita = im.id_marmita
+                LEFT JOIN Ingredientes i ON im.id_ingrediente = i.id_ingrediente
+                LEFT JOIN Unidades u ON i.id_unidade = u.id_unidade
+            """
+            df = pd.read_sql_query(query, conn)
+        finally:
+            conn.close()
+
+        # Se não houver marmitas, retornar DataFrame vazio com as colunas solicitadas
+        if df.empty:
+            return pd.DataFrame(columns=['nome_marmita', 'preco_venda', 'custo_estimado', 'ingredientes'])
+
+        # Garantir que nome_ingrediente seja string e remover entradas nulas antes de concatenar
+        df['nome_ingrediente'] = df['nome_ingrediente'].astype(object)
+        df['nome_ingrediente'] = df['nome_ingrediente'].where(pd.notnull(df['nome_ingrediente']), None)
+
+        # Agrupar por marmita e concatenar nomes de ingredientes distintos (ignorando None)
+        grouped = (
+            df.groupby('id_marmita', sort=False)
+              .agg({
+                  'nome_marmita': 'first',
+                  'preco_venda': 'first',
+                  'custo_estimado': 'first',
+                  'nome_ingrediente': lambda s: ', '.join([x for x in pd.unique(s.dropna().astype(str))])
+              })
+              .reset_index(drop=True)
+        )
+
+        # Renomear coluna de ingredientes
+        grouped = grouped.rename(columns={'nome_ingrediente': 'ingredientes'})
+
+        # Garantir tipos numéricos para ordenação/visualização
+        grouped['preco_venda'] = pd.to_numeric(grouped['preco_venda'], errors='coerce')
+        grouped['custo_estimado'] = pd.to_numeric(grouped['custo_estimado'], errors='coerce')
+
+        # Ordenar por nome da marmita e resetar índice
+        grouped = grouped.sort_values(by='nome_marmita').reset_index(drop=True)
+
+        return grouped
+
+    def GetVendasTable(self):
+        # Lógica para retornar tabela de vendas
+        pass

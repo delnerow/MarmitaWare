@@ -51,8 +51,7 @@ with st.expander("➕ Adicionar Nova Compra", expanded=False):
                 gerenciador.CreateCompra(
                     data=data_compra,
                     valor_total=valor_total,
-                    ingredientes_ids=ids_ingredientes,
-                    preco_ingredientes=precos_ingredientes
+                    ingredientes_precos=precos_ingredientes
                 )
                 st.success(f"Compra de R$ {valor_total:.2f} registrada com sucesso!")
                 # Força o recarregamento do gerenciador e da página

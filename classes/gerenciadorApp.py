@@ -4,6 +4,8 @@ from .marmita import Marmita, FactoryMarmita
 from .ingrediente import Ingrediente, FactoryIngrediente
 from .gerenciadorBD import GerenciadorBD
 
+import pandas as pd
+
 
 class GerenciadorApp():
         
@@ -164,15 +166,21 @@ class GerenciadorApp():
 
     def GetComprasTable(self):
         # Lógica para retornar tabela de compras
-        pass
+        tab = self.gerenciadorBD.getCompras()
+        df = pd.DataFrame(tab)
+        return df
 
     def GetMarmitasTable(self):
         # Lógica para retornar tabela de marmitas
-        pass
+        tab = self.gerenciadorBD.getMarmitas()
+        df = pd.DataFrame(tab)
+        return df
 
     def GetVendasTable(self):
         # Lógica para retornar tabela de vendas
-        pass
+        tab = self.gerenciadorBD.getVendas()
+        df = pd.DataFrame(tab)
+        return df
 
     def GetRelatorio(self):
         # Lógica para gerar relatório
