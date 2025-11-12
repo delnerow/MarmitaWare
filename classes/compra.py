@@ -34,8 +34,6 @@ class FactoryCompra:
 
         return Compra(ID, data, valor_total, ingredientes, preco_ingredientes)
 
-
-
 class Compra:
     def __init__(
         self,

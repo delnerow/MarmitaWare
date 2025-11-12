@@ -166,19 +166,19 @@ class GerenciadorApp():
 
     def GetComprasTable(self):
         # Lógica para retornar tabela de compras
-        tab = self.gerenciadorBD.getCompras()
+        tab = self.gerenciadorBD.GetComprasTable()
         df = pd.DataFrame(tab)
         return df
 
     def GetMarmitasTable(self):
         # Lógica para retornar tabela de marmitas
-        tab = self.gerenciadorBD.getMarmitas()
+        tab = self.gerenciadorBD.GetMarmitasTable()
         df = pd.DataFrame(tab)
         return df
 
     def GetVendasTable(self):
         # Lógica para retornar tabela de vendas
-        tab = self.gerenciadorBD.getVendas()
+        tab = self.gerenciadorBD.getVendasTable()
         df = pd.DataFrame(tab)
         return df
 

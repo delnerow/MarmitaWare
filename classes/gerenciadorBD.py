@@ -463,6 +463,41 @@ class GerenciadorBD():
 
         return grouped
 
-    def GetVendasTable(self):
-        # Lógica para retornar tabela de vendas
-        pass
+    def getVendasTable(self):
+        """Retorna um pandas.DataFrame com colunas:
+        'data' / 'nome_marmita' / 'quantidade_vendida' / 'preco_venda' / 'valor_total'
+        Cada linha representa um registro de venda (não agregadas). Ordenado por data.
+        """
+        conn = sqlite3.connect(self.DATA_FILE)
+        try:
+            query = """
+                SELECT v.id_venda,
+                       v.data_de_venda AS data,
+                       v.quantidade_vendida,
+                       m.nome_marmita,
+                       m.preco_venda
+                FROM Vendas v
+                LEFT JOIN Marmitas m ON v.id_marmita = m.id_marmita
+            """
+            df = pd.read_sql_query(query, conn)
+        finally:
+            conn.close()
+
+        if df.empty:
+            return pd.DataFrame(columns=['data', 'nome_marmita', 'quantidade_vendida', 'preco_venda', 'valor_total'])
+
+        # Normalizar tipos e preencher valores ausentes
+        df['data'] = pd.to_datetime(df['data'], errors='coerce')
+        df['nome_marmita'] = df['nome_marmita'].fillna('Desconhecido')
+        df['preco_venda'] = pd.to_numeric(df['preco_venda'], errors='coerce').fillna(0.0)
+        df['quantidade_vendida'] = pd.to_numeric(df['quantidade_vendida'], errors='coerce').fillna(0).astype(int)
+
+        # Calcular valor total por registro de venda
+        df['valor_total'] = df['preco_venda'] * df['quantidade_vendida']
+
+        # Selecionar e ordenar colunas para retorno
+        result = df[['data', 'nome_marmita', 'quantidade_vendida', 'preco_venda', 'valor_total']] \
+                    .sort_values(by='data') \
+                    .reset_index(drop=True)
+
+        return result
