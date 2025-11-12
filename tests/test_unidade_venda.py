@@ -18,7 +18,6 @@ def test_venda_criacao():
     (Nível de Teste: Unidade)
     """
     hoje = date.today()
-    # No seu código, 'marmita' é provavelmente o ID da marmita
     marmita_id = 1
     
     v = Venda(
