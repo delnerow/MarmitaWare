@@ -18,19 +18,18 @@ def test_venda_criacao():
     (Nível de Teste: Unidade)
     """
     hoje = date.today()
-    marmita_id = 1
     
     v = Venda(
         ID=201,
-        marmita=marmita_id,
+        id_marmita=1,
         quantidade=2,
         data=hoje
     )
     
     assert v.ID == 201
-    assert v.marmita == marmita_id
-    assert v.quantidade == 2
-    assert v.data == hoje
+    assert v.id_marmita == 1
+    assert v.quantidade_vendida == 2
+    assert v.data_de_venda == hoje
 
 def test_venda_editar():
     """
@@ -38,7 +37,7 @@ def test_venda_editar():
     (Nível de Teste: Unidade)
     """
     data_original = date(2025, 10, 20)
-    v = Venda(ID=202, marmita=1, quantidade=1, data=data_original)
+    v = Venda(ID=202, id_marmita=1, quantidade=1, data=data_original)
     
     # Ação: Editar a quantidade e a data
     nova_data = date(2025, 10, 21)
@@ -46,8 +45,8 @@ def test_venda_editar():
     
     # Verificação
     assert v.ID == 202       # ID não deve mudar
-    assert v.marmita == 1   # Marmita ID não deve mudar
-    assert v.quantidade == 3  # Quantidade DEVE mudar
+    assert v.id_marmita == 1   # Marmita ID não deve mudar
+    assert v.quantidade_vendida == 3  # Quantidade DEVE mudar
     assert v.data == nova_data # Data DEVE mudar
 
 # --- Testes de Unidade para a classe FactoryVenda ---
@@ -63,7 +62,7 @@ def test_factory_venda_create_sucesso(factory):
     (Nível de Teste: Unidade)
     """
     data_venda = date(2025, 11, 10)
-    venda_criada = factory.CreateVendas(
+    venda_criada = factory.CreateVenda(
         marmita=5, # ID da marmita
         quantidade=2,
         data=data_venda
@@ -71,9 +70,9 @@ def test_factory_venda_create_sucesso(factory):
     
     assert isinstance(venda_criada, Venda)
     assert venda_criada.ID == 301 # Primeiro ID
-    assert venda_criada.marmita == 5
-    assert venda_criada.quantidade == 2
-    assert venda_criada.data == data_venda
+    assert venda_criada.id_marmita == 5
+    assert venda_criada.quantidade_vendida == 2
+    assert venda_criada.data_de_venda == data_venda
     assert factory.next_ID == 302 # Deve ter incrementado
 
 def test_factory_venda_from_db(factory):
@@ -94,7 +93,7 @@ def test_factory_venda_from_db(factory):
     
     assert isinstance(venda_recriada, Venda)
     assert venda_recriada.ID == 42
-    assert venda_recriada.marmita == 7
-    assert venda_recriada.quantidade == 3
+    assert venda_recriada.id_marmita == 7
+    assert venda_recriada.quantidade_vendida == 3
     # Verifica se a conversão de string para objeto date funcionou
-    assert venda_recriada.data == date(2025, 11, 5)
+    assert venda_recriada.data_de_venda == date(2025, 11, 5)

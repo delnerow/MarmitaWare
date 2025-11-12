@@ -120,7 +120,6 @@ def test_bd_save_and_get_marmita(db_test_file):
         nome_marmita="Arroz e Feijão",
         preco_venda=15.0,
         custo_estimado=10.0,
-        ingredientes=[10, 11], # Lista de IDs (FKs)
         quantidade_ingredientes={10: 150, 11: 100} # {ID: gramas}
     )
 
@@ -158,16 +157,14 @@ def test_bd_save_and_get_venda(db_test_file):
     # Cria um objeto Venda (real)
     v = Venda(
         ID=1, # Ignorado
-        marmita=5, # FK para a marmita que acabamos de criar
+        id_marmita=5, # FK para a marmita que acabamos de criar
         quantidade=3,
         data=date(2025, 11, 10)
     )
     # Em 'venda.py', o __init__ armazena 'data'
     # Em 'gerenciadorBD.py', 'saveVendas' lê 'venda.data_de_venda'
     # Isso é um bug! Vamos ajustar o objeto de teste para o que o saveVendas espera.
-    v.data_de_venda = v.data
-    v.id_marmita = v.marmita
-    v.quantidade_vendida = v.quantidade
+
 
     # --- Ação ---
     db_test_file.saveVendas(v)
@@ -199,8 +196,8 @@ def test_bd_get_compras_complex(db_test_file):
         conn.execute("INSERT INTO Compras (id_compra, data_de_compra, valor_total) VALUES (1, '2025-11-01', 130.0)")
         
         # Insere os itens na tabela de ligação
-        conn.execute("INSERT INTO compra_ingredientes (id_compra, id_ingrediente, preco_compra, quantidade_comprada) VALUES (1, 10, 50.0, 10)")
-        conn.execute("INSERT INTO compra_ingredientes (id_compra, id_ingrediente, preco_compra, quantidade_comprada) VALUES (1, 11, 80.0, 5)")
+        conn.execute("INSERT INTO compra_ingredientes (id_compra, id_ingrediente, preco_compra) VALUES (1, 10, 50.0)")
+        conn.execute("INSERT INTO compra_ingredientes (id_compra, id_ingrediente, preco_compra) VALUES (1, 11, 80.0)")
         conn.commit()
     finally:
         conn.close()

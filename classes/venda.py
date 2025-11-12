@@ -21,9 +21,9 @@ class FactoryVenda:
         return Venda(ID, marmita, quantidade, data)
 
 class Venda:
-    def __init__(self, ID: int, marmita, quantidade: int, data: date):
+    def __init__(self, ID: int, id_marmita, quantidade: int, data: date):
         self.ID = ID
-        self.id_marmita = marmita
+        self.id_marmita = id_marmita
         self.quantidade_vendida = quantidade
         self.data_de_venda = data
 

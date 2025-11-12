@@ -21,7 +21,6 @@ def test_marmita_criacao():
     
     m = Marmita(
         ID=1,
-        ingredientes=ingredientes_lista,
         preco_venda=18.50,
         quantidade_ingredientes=qtd_ingredientes_dict,
         custo_estimado=12.00,
@@ -32,7 +31,7 @@ def test_marmita_criacao():
     assert m.ID == 1
     assert m.nome == "Frango Grelhado"
     assert m.preco_venda == 18.50
-    assert m.custo_estimated == 12.00
+    assert m.custo_estimado == 12.00
     assert m.ingredientes == [1, 2, 3]
     assert m.quantidade_ingredientes[1] == 100
 
@@ -41,7 +40,7 @@ def test_marmita_editar():
     Testa se o método Editar() atualiza apenas os campos fornecidos.
     (Nível de Teste: Unidade)
     """
-    m = Marmita(ID=2, ingredientes=[], preco_venda=15.00, quantidade_ingredientes={}, custo_estimado=10.0, nome_marmita="Teste")
+    m = Marmita(ID=2, preco_venda=15.00, quantidade_ingredientes={}, custo_estimado=10.0, nome_marmita="Teste")
     
     # Ação: Editar apenas o preço e o custo
     m.Editar(preco_venda=16.00, custo_estimado=11.00)
@@ -50,7 +49,7 @@ def test_marmita_editar():
     assert m.ID == 2 # ID não deve mudar
     assert m.nome == "Teste" # Nome não deve mudar
     assert m.preco_venda == 16.00 # Preço DEVE mudar
-    assert m.custo_estimated == 11.00 # Custo DEVE mudar
+    assert m.custo_estimado == 11.00 # Custo DEVE mudar
 
 # --- Testes de Unidade para a classe FactoryMarmita ---
 
@@ -64,7 +63,6 @@ def test_factory_marmita_create():
     
     # Ação
     marmita_criada = factory.CreateMarmita(
-        ingredientes=[5, 6],
         preco_venda=20.0,
         quantidade_ingredientes={5: 100, 6: 150},
         custo_estimado=14.0,

@@ -221,7 +221,7 @@ class GerenciadorBD():
             cursor.execute('''
                 INSERT INTO Marmitas (nome_marmita, preco_venda, custo_estimado)
                 VALUES (?, ?, ?)
-            ''', (marmita.nome, marmita.preco_venda, marmita.custo_estimated))
+            ''', (marmita.nome, marmita.preco_venda, marmita.custo_estimado))
             
             id_marmita = cursor.lastrowid
             

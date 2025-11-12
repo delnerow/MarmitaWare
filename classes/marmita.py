@@ -46,4 +46,4 @@ class Marmita:
     
     def print_marmita(self):
         # para testes, apenas
-        print(f"ID: {self.ID}, Nome: {self.nome}, Ingredientes: {self.ingredientes}, Preço de Venda: {self.preco_venda}, Quantidade de Ingredientes: {self.quantidade_ingredientes}, Custo Estimado: {self.custo_estimated}")
+        print(f"ID: {self.ID}, Nome: {self.nome}, Ingredientes: {self.ingredientes}, Preço de Venda: {self.preco_venda}, Quantidade de Ingredientes: {self.quantidade_ingredientes}, Custo Estimado: {self.custo_estimado}")

@@ -93,14 +93,13 @@ def test_app_create_ingrediente_delegates_correctly(mocker, mock_dependencies):
     app.CreateIngrediente(
         nome="Tomate", 
         preco_compra=10.0, 
-        id_unidade=1, 
-        data_ultima_compra=None
+        id_unidade=1,
     )
     
     # --- Verificação ---
     # 1. A Factory foi chamada para criar o objeto?
     mock_dependencies['factory_ing'].CreateIngrediente.assert_called_once_with(
-        "Tomate", 10.0, None, 1
+        "Tomate", 10.0, 1
     )
     
     # 2. O objeto criado foi salvo no BD?
