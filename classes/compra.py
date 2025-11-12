@@ -5,7 +5,14 @@ class FactoryCompra:
         # implementar o carregamento do último ID usado a partir do banco de dados
         self.next_ID = next_ID
 
-    def CreateCompra(self, data: date, valor_total: float, ingredientes: list, preco_ingredientes: dict):
+    def CreateCompra(self, data: date, valor_total: float, preco_ingredientes: dict):
+        if preco_ingredientes is None:
+            ingredientes = []
+        elif isinstance(preco_ingredientes, dict):
+            ingredientes = list(preco_ingredientes.keys())
+        else:
+            ingredientes = list(preco_ingredientes)
+            
         compra = Compra(self.next_ID, data, valor_total, ingredientes, preco_ingredientes)
         self.next_ID += 1
         return compra

@@ -65,7 +65,6 @@ def test_factory_ingrediente_create_sucesso(factory):
     ingrediente_criado = factory.CreateIngrediente(
         nome=" Frango ", # Testar normalização (strip)
         preco_compra=" 15.99 ", # Testar conversão de string
-        data_ultima_compra=date.today(),
         id_unidade=1
     )
     
@@ -85,7 +84,6 @@ def test_factory_ingrediente_create_validacao_preco_negativo(factory):
         factory.CreateIngrediente(
             nome="Tomate",
             preco_compra=-10.0, # Valor de fronteira inválido
-            data_ultima_compra=None,
             id_unidade=1
         )
 
@@ -95,10 +93,10 @@ def test_factory_ingrediente_create_validacao_nome_vazio(factory):
     (Nível de Teste: Unidade - Caixa Preta)
     """
     with pytest.raises(ValueError, match="Nome do ingrediente não pode ser vazio."):
-        factory.CreateIngrediente(nome=" ", data_ultima_compra=None, preco_compra=5.0, id_unidade=1)
+        factory.CreateIngrediente(nome=" ", preco_compra=5.0, id_unidade=1)
         
     with pytest.raises(ValueError, match="Nome do ingrediente não pode ser vazio."):
-        factory.CreateIngrediente(nome=None, data_ultima_compra=None, preco_compra=5.0, id_unidade=1)
+        factory.CreateIngrediente(nome=None, preco_compra=5.0, id_unidade=1)
 
 def test_factory_ingrediente_create_validacao_preco_invalido(factory):
     """
@@ -109,6 +107,5 @@ def test_factory_ingrediente_create_validacao_preco_invalido(factory):
         factory.CreateIngrediente(
             nome="Alface",
             preco_compra="abc", # Valor inválido
-            data_ultima_compra=None,
             id_unidade=2
         )

@@ -70,13 +70,11 @@ def test_factory_compra_create_sucesso(factory):
     (Nível de Teste: Unidade)
     """
     hoje = date.today()
-    ingredientes_lista = [5, 6]
     precos_dict = {5: 50.0, 6: 100.0}
     
     compra_criada = factory.CreateCompra(
         data=hoje,
         valor_total=150.0,
-        ingredientes=ingredientes_lista,
         preco_ingredientes=precos_dict
     )
     

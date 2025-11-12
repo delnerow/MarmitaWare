@@ -4,6 +4,7 @@ from .venda import Venda
 from .marmita import Marmita
 from .ingrediente import Ingrediente
 from .compra import Compra
+import pandas as pd
 
 class GerenciadorBD():
     _instance = None
@@ -65,7 +66,6 @@ class GerenciadorBD():
             id_compra INTEGER NOT NULL,
             id_ingrediente INTEGER NOT NULL,
             preco_compra NUMERIC(10, 2) NOT NULL,
-            quantidade_comprada NUMERIC(5, 4) NOT NULL,
             FOREIGN KEY (id_compra) REFERENCES Compras (id_compra),
             FOREIGN KEY (id_ingrediente) REFERENCES Ingredientes (id_ingrediente),
             UNIQUE (id_compra, id_ingrediente)
@@ -228,8 +228,7 @@ class GerenciadorBD():
             
             # Insere os ingredientes da marmita na tabela de ligação
             if hasattr(marmita, 'ingredientes') and marmita.ingredientes:
-                for ingrediente in marmita.ingredientes:
-                    id_ingrediente = ingrediente.ID
+                for id_ingrediente in marmita.ingredientes:
                     cursor.execute('''
                         INSERT INTO ingredientes_marmita (id_marmita, id_ingrediente, quantidade)
                         VALUES (?, ?, ?)
@@ -249,9 +248,9 @@ class GerenciadorBD():
         
         try:
             cursor.execute('''
-                INSERT INTO Ingredientes (nome_ingrediente, preco_compra, id_unidade)
-                VALUES (?, ?, ?)
-            ''', (ingrediente.nome, ingrediente.preco_compra, ingrediente.id_unidade))
+                INSERT INTO Ingredientes (nome_ingrediente, preco_compra, data_ultima_compra, id_unidade)
+                VALUES (?, ?, ?, ?)
+            ''', (ingrediente.nome, ingrediente.preco_compra, ingrediente.data_ultima_compra, ingrediente.id_unidade))
             conn.commit()
         except sqlite3.IntegrityError as e:
             conn.rollback()
@@ -259,8 +258,61 @@ class GerenciadorBD():
         finally:
             conn.close()
     
-    def saveCompras(self, compra):
-        pass
+    def saveCompra(self, compra: Compra):
+        """Salva uma nova compra, os itens na tabela de ligação e atualiza preço/data dos ingredientes."""
+        def _get(obj, *names):
+            for n in names:
+                if hasattr(obj, n):
+                    return getattr(obj, n)
+                if isinstance(obj, dict) and n in obj:
+                    return obj[n]
+            return None
+
+        data_de_compra = _get(compra, 'data_de_compra', 'data', 'data_compra')
+        valor_total = _get(compra, 'valor_total', 'valor', 'total')
+        ingredientes_list = _get(compra, 'ingredientes', 'itens', 'ids')
+        preco_map = _get(compra, 'preco_ingredientes', 'preco_por_ingrediente', 'precos') or {}
+        quantidade_map = _get(compra, 'quantidade_ingredientes', 'quantidades', 'quantidade_por_ingrediente') or {}
+
+        if ingredientes_list is None:
+            raise ValueError("Compra deve conter a lista de 'ingredientes' (ids)")
+
+        conn = sqlite3.connect(self.DATA_FILE)
+        cursor = conn.cursor()
+        cursor.execute('PRAGMA foreign_keys = ON;')
+
+        try:
+            # Insere a compra
+            cursor.execute('''
+                INSERT INTO Compras (data_de_compra, valor_total)
+                VALUES (?, ?)
+            ''', (data_de_compra, valor_total))
+            id_compra = cursor.lastrowid
+
+            # Insere itens na tabela de ligação e atualiza ingredientes
+            for id_ingrediente in ingredientes_list:
+                preco = preco_map.get(id_ingrediente, preco_map.get(str(id_ingrediente), 0.0))
+
+                cursor.execute('''
+                    INSERT INTO compra_ingredientes (id_compra, id_ingrediente, preco_compra)
+                    VALUES (?, ?, ?)
+                ''', (id_compra, id_ingrediente, preco))
+
+                # Atualiza preço e data da última compra no ingrediente
+                # somente se a data_de_compra for posterior à data_ultima_compra (ou se data_ultima_compra for NULL)
+                cursor.execute('''
+                    UPDATE Ingredientes
+                    SET preco_compra = ?, data_ultima_compra = ?
+                    WHERE id_ingrediente = ? AND (data_ultima_compra IS NULL OR date(?) > date(data_ultima_compra))
+                ''', (preco, data_de_compra, id_ingrediente, data_de_compra))
+
+            conn.commit()
+            return id_compra
+        except sqlite3.IntegrityError as e:
+            conn.rollback()
+            raise e
+        finally:
+            conn.close()
 
     def getProximoID(self):
         """Retorna o próximo ID para as tabelas principais em dicionário.
@@ -301,3 +353,116 @@ class GerenciadorBD():
             return ids
         finally:
             conn.close()
+
+    def GetComprasTable(self):
+        """Retorna um pandas.DataFrame com colunas:
+        'ingredientes comprados' / 'valor total' / 'data'.
+        Usa uma consulta SQL para obter registros de compra x ingrediente,
+        depois faz groupby em pandas para agregar ingredientes por compra
+        e ordena por data.
+        """
+
+        conn = sqlite3.connect(self.DATA_FILE)
+        try:
+            query = """
+                SELECT c.id_compra,
+                       c.data_de_compra AS data,
+                       c.valor_total,
+                       i.nome_ingrediente
+                FROM Compras c
+                JOIN compra_ingredientes ci ON c.id_compra = ci.id_compra
+                JOIN Ingredientes i ON ci.id_ingrediente = i.id_ingrediente
+            """
+            df = pd.read_sql_query(query, conn)
+        finally:
+            conn.close()
+
+        # Se não houver resultados, retornar DataFrame vazio com as colunas solicitadas
+        if df.empty:
+            return pd.DataFrame(columns=['ingredientes comprados', 'valor total', 'data'])
+
+        # Agrupar por compra, concatenar nomes de ingredientes, pegar valor_total e data (primeiro)
+        grouped = (
+            df.groupby('id_compra', sort=False)
+              .agg({
+                  'nome_ingrediente': lambda s: ', '.join(s.astype(str).tolist()),
+                  'valor_total': 'first',
+                  'data': 'first'
+              })
+              .reset_index(drop=True)
+        )
+
+        # Renomear colunas para o formato pedido
+        grouped = grouped.rename(columns={
+            'nome_ingrediente': 'ingredientes comprados',
+            'valor_total': 'valor total',
+            'data': 'data'
+        })
+
+        # Garantir que 'data' seja datetime para ordenar corretamente
+        grouped['data'] = pd.to_datetime(grouped['data'], errors='coerce')
+
+        # Ordenar por data e resetar índice
+        grouped = grouped.sort_values(by='data').reset_index(drop=True)
+
+        return grouped
+
+    def GetMarmitasTable(self):
+        """Retorna um pandas.DataFrame com colunas:
+        'nome_marmita' / 'preco_venda' / 'custo_estimado' / 'ingredientes'
+        Cada linha tem os nomes dos ingredientes concatenados (sem usar ids).
+        """
+        conn = sqlite3.connect(self.DATA_FILE)
+        try:
+            query = """
+                SELECT m.id_marmita,
+                       m.nome_marmita,
+                       m.preco_venda,
+                       m.custo_estimado,
+                       i.nome_ingrediente,
+                       im.quantidade,
+                       u.sigla_unidade
+                FROM Marmitas m
+                LEFT JOIN ingredientes_marmita im ON m.id_marmita = im.id_marmita
+                LEFT JOIN Ingredientes i ON im.id_ingrediente = i.id_ingrediente
+                LEFT JOIN Unidades u ON i.id_unidade = u.id_unidade
+            """
+            df = pd.read_sql_query(query, conn)
+        finally:
+            conn.close()
+
+        # Se não houver marmitas, retornar DataFrame vazio com as colunas solicitadas
+        if df.empty:
+            return pd.DataFrame(columns=['nome_marmita', 'preco_venda', 'custo_estimado', 'ingredientes'])
+
+        # Garantir que nome_ingrediente seja string e remover entradas nulas antes de concatenar
+        df['nome_ingrediente'] = df['nome_ingrediente'].astype(object)
+        df['nome_ingrediente'] = df['nome_ingrediente'].where(pd.notnull(df['nome_ingrediente']), None)
+
+        # Agrupar por marmita e concatenar nomes de ingredientes distintos (ignorando None)
+        grouped = (
+            df.groupby('id_marmita', sort=False)
+              .agg({
+                  'nome_marmita': 'first',
+                  'preco_venda': 'first',
+                  'custo_estimado': 'first',
+                  'nome_ingrediente': lambda s: ', '.join([x for x in pd.unique(s.dropna().astype(str))])
+              })
+              .reset_index(drop=True)
+        )
+
+        # Renomear coluna de ingredientes
+        grouped = grouped.rename(columns={'nome_ingrediente': 'ingredientes'})
+
+        # Garantir tipos numéricos para ordenação/visualização
+        grouped['preco_venda'] = pd.to_numeric(grouped['preco_venda'], errors='coerce')
+        grouped['custo_estimado'] = pd.to_numeric(grouped['custo_estimado'], errors='coerce')
+
+        # Ordenar por nome da marmita e resetar índice
+        grouped = grouped.sort_values(by='nome_marmita').reset_index(drop=True)
+
+        return grouped
+
+    def GetVendasTable(self):
+        # Lógica para retornar tabela de vendas
+        pass

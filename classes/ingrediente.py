@@ -1,10 +1,13 @@
+import datetime
+
 
 class FactoryIngrediente:
     def __init__(self, next_ID: int):
         # implementar o carregamento do último ID usado a partir do banco de dados
         self.next_ID = next_ID
+        self.hoje = datetime.date.today()
 
-    def CreateIngrediente(self, nome: str, preco_compra: float, data_ultima_compra, id_unidade: int):
+    def CreateIngrediente(self, nome: str, preco_compra: float, id_unidade: int):
         # Cria um novo ingrediente com um ID único
         # implementa a regra de negócio para criação de ingredientes
 
@@ -26,7 +29,7 @@ class FactoryIngrediente:
         # normalização
         nome = nome.strip() if isinstance(nome, str) else nome 
 
-        ingrediente = Ingrediente(self.next_ID, nome, preco_compra, data_ultima_compra, id_unidade)
+        ingrediente = Ingrediente(self.next_ID, nome, preco_compra, self.hoje, id_unidade)
         self.next_ID += 1
         return ingrediente
 
