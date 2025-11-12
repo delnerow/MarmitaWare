@@ -65,7 +65,6 @@ class GerenciadorBD():
             id_compra INTEGER NOT NULL,
             id_ingrediente INTEGER NOT NULL,
             preco_compra NUMERIC(10, 2) NOT NULL,
-            quantidade_comprada NUMERIC(5, 4) NOT NULL,
             FOREIGN KEY (id_compra) REFERENCES Compras (id_compra),
             FOREIGN KEY (id_ingrediente) REFERENCES Ingredientes (id_ingrediente),
             UNIQUE (id_compra, id_ingrediente)
@@ -229,7 +228,7 @@ class GerenciadorBD():
             # Insere os ingredientes da marmita na tabela de ligação
             if hasattr(marmita, 'ingredientes') and marmita.ingredientes:
                 for ingrediente in marmita.ingredientes:
-                    id_ingrediente = ingrediente.ID
+                    id_ingrediente = ingrediente
                     cursor.execute('''
                         INSERT INTO ingredientes_marmita (id_marmita, id_ingrediente, quantidade)
                         VALUES (?, ?, ?)
@@ -259,8 +258,61 @@ class GerenciadorBD():
         finally:
             conn.close()
     
-    def saveCompras(self, compra):
-        pass
+    def saveCompra(self, compra: Compra):
+        """Salva uma nova compra, os itens na tabela de ligação e atualiza preço/data dos ingredientes."""
+        def _get(obj, *names):
+            for n in names:
+                if hasattr(obj, n):
+                    return getattr(obj, n)
+                if isinstance(obj, dict) and n in obj:
+                    return obj[n]
+            return None
+
+        data_de_compra = _get(compra, 'data_de_compra', 'data', 'data_compra')
+        valor_total = _get(compra, 'valor_total', 'valor', 'total')
+        ingredientes_list = _get(compra, 'ingredientes', 'itens', 'ids')
+        preco_map = _get(compra, 'preco_ingredientes', 'preco_por_ingrediente', 'precos') or {}
+        quantidade_map = _get(compra, 'quantidade_ingredientes', 'quantidades', 'quantidade_por_ingrediente') or {}
+
+        if ingredientes_list is None:
+            raise ValueError("Compra deve conter a lista de 'ingredientes' (ids)")
+
+        conn = sqlite3.connect(self.DATA_FILE)
+        cursor = conn.cursor()
+        cursor.execute('PRAGMA foreign_keys = ON;')
+
+        try:
+            # Insere a compra
+            cursor.execute('''
+                INSERT INTO Compras (data_de_compra, valor_total)
+                VALUES (?, ?)
+            ''', (data_de_compra, valor_total))
+            id_compra = cursor.lastrowid
+
+            # Insere itens na tabela de ligação e atualiza ingredientes
+            for id_ingrediente in ingredientes_list:
+                preco = preco_map.get(id_ingrediente, preco_map.get(str(id_ingrediente), 0.0))
+
+                cursor.execute('''
+                    INSERT INTO compra_ingredientes (id_compra, id_ingrediente, preco_compra)
+                    VALUES (?, ?, ?)
+                ''', (id_compra, id_ingrediente, preco))
+
+                # Atualiza preço e data da última compra no ingrediente
+                # somente se a data_de_compra for posterior à data_ultima_compra (ou se data_ultima_compra for NULL)
+                cursor.execute('''
+                    UPDATE Ingredientes
+                    SET preco_compra = ?, data_ultima_compra = ?
+                    WHERE id_ingrediente = ? AND (data_ultima_compra IS NULL OR date(?) > date(data_ultima_compra))
+                ''', (preco, data_de_compra, id_ingrediente, data_de_compra))
+
+            conn.commit()
+            return id_compra
+        except sqlite3.IntegrityError as e:
+            conn.rollback()
+            raise e
+        finally:
+            conn.close()
 
     def getProximoID(self):
         """Retorna o próximo ID para as tabelas principais em dicionário.
