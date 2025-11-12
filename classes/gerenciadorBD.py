@@ -221,14 +221,13 @@ class GerenciadorBD():
             cursor.execute('''
                 INSERT INTO Marmitas (nome_marmita, preco_venda, custo_estimado)
                 VALUES (?, ?, ?)
-            ''', (marmita.nome, marmita.preco_venda, marmita.custo_estimado))
+            ''', (marmita.nome, marmita.preco_venda, marmita.custo_estimated))
             
             id_marmita = cursor.lastrowid
             
             # Insere os ingredientes da marmita na tabela de ligação
             if hasattr(marmita, 'ingredientes') and marmita.ingredientes:
-                for ingrediente in marmita.ingredientes:
-                    id_ingrediente = ingrediente
+                for id_ingrediente in marmita.ingredientes:
                     cursor.execute('''
                         INSERT INTO ingredientes_marmita (id_marmita, id_ingrediente, quantidade)
                         VALUES (?, ?, ?)
