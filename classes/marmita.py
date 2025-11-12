@@ -5,8 +5,8 @@ class FactoryMarmita:
         # implementar o carregamento do último ID usado a partir do banco de dados
         self.next_ID = next_ID
 
-    def CreateMarmita(self, ingredientes: list, preco_venda: float, quantidade_ingredientes: dict, custo_estimado: float, nome_marmita: str):
-        marmita = Marmita(self.next_ID, ingredientes, preco_venda, quantidade_ingredientes, custo_estimado, nome_marmita)
+    def CreateMarmita(self, preco_venda: float, quantidade_ingredientes: dict, custo_estimado: float, nome_marmita: str):
+        marmita = Marmita(self.next_ID, preco_venda, quantidade_ingredientes, custo_estimado, nome_marmita)
         self.next_ID += 1
         return marmita
 
@@ -19,16 +19,20 @@ class FactoryMarmita:
         custo_estimado = marmitaDict.get('custo_estimado')
         nome_marmita = marmitaDict.get('nome_marmita')
 
-        return Marmita(ID, ingredientes, preco_venda, quantidade_ingredientes, custo_estimado, nome_marmita)
+        return Marmita(ID, preco_venda, quantidade_ingredientes, custo_estimado, nome_marmita)
 
 class Marmita:
-    def __init__(self, ID: int, ingredientes: list, preco_venda: float, quantidade_ingredientes: dict, custo_estimado: float, nome_marmita: str):
+    def __init__(self, ID: int, preco_venda: float, quantidade_ingredientes: dict, custo_estimado: float, nome_marmita: str):
         self.ID = ID
+        if quantidade_ingredientes is None:
+            ingredientes = []
+        else:
+            ingredientes = list(quantidade_ingredientes.keys())
         self.nome = nome_marmita
         self.ingredientes = ingredientes
         self.preco_venda = preco_venda
         self.quantidade_ingredientes = quantidade_ingredientes  # {ingrediente_ID: quantidade}
-        self.custo_estimated = custo_estimado
+        self.custo_estimado = custo_estimado
 
     def Editar(self, ingredientes: list = None, preco_venda: float = None, quantidade_ingredientes: dict = None, custo_estimado: float = None):
         if ingredientes is not None:
@@ -38,7 +42,7 @@ class Marmita:
         if quantidade_ingredientes is not None:
             self.quantidade_ingredientes = quantidade_ingredientes
         if custo_estimado is not None:
-            self.custo_estimated = custo_estimado
+            self.custo_estimado = custo_estimado
     
     def print_marmita(self):
         # para testes, apenas

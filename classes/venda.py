@@ -5,7 +5,7 @@ class FactoryVenda:
         # implementar o carregamento do último ID usado a partir do banco de dados
         self.next_ID = next_ID
 
-    def CreateVendas(self, marmita, quantidade: int, data: date):
+    def CreateVenda(self, marmita, quantidade: int, data: date):
         venda = Venda(self.next_ID, marmita, quantidade, data)
         self.next_ID += 1
         return venda
@@ -23,15 +23,15 @@ class FactoryVenda:
 class Venda:
     def __init__(self, ID: int, marmita, quantidade: int, data: date):
         self.ID = ID
-        self.marmita = marmita
-        self.quantidade = quantidade
-        self.data = data
+        self.id_marmita = marmita
+        self.quantidade_vendida = quantidade
+        self.data_de_venda = data
 
     def editar(self, marmita = None, quantidade: int = None, data: date = None):
         if marmita is not None:
-            self.marmita = marmita
+            self.id_marmita = marmita
         if quantidade is not None:
-            self.quantidade = quantidade
+            self.quantidade_vendida = quantidade
         if data is not None:
             self.data = data
 
