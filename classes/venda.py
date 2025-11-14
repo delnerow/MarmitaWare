@@ -37,4 +37,4 @@ class Venda:
 
     def print_venda(self):
         # para testes, apenas
-        print(f"ID: {self.ID}, Marmita: {self.marmita}, Quantidade: {self.quantidade}, Data: {self.data}")
+        print(f"ID: {self.ID}, Marmita: {self.id_marmita}, Quantidade: {self.quantidade_vendida}, Data: {self.data_de_venda}")

@@ -4,6 +4,8 @@ from .marmita import Marmita, FactoryMarmita
 from .ingrediente import Ingrediente, FactoryIngrediente
 from .gerenciadorBD import GerenciadorBD
 
+from datetime import date, datetime
+
 import pandas as pd
 
 
@@ -148,9 +150,12 @@ class GerenciadorApp():
 
         return compra
 
-    def EditVendas(self):
-        # Lógica para editar vendas
-        pass
+    def EditVendas(self, ID_venda: int, marmita_new: int = None, quantidade_new: int = None, data_new: date = None):
+        # Lógica para editar vendas na meméria
+        self.vendas[ID_venda].editar(marmita_new, quantidade_new, data_new)
+
+        # Atualiza no banco de dados
+        self.gerenciadorBD.updateVendas(self.vendas[ID_venda])
 
     def EditMarmita(self):
         # Lógica para editar marmitas

@@ -501,3 +501,15 @@ class GerenciadorBD():
                     .reset_index(drop=True)
 
         return result
+    
+    def updateVendas(self, venda: Venda):
+        """Atualiza uma venda existente no banco de dados"""
+        conn = sqlite3.connect(self.DATA_FILE)
+        cursor = conn.cursor()
+        cursor.execute('''
+            UPDATE Vendas
+            SET id_marmita = ?, data_de_venda = ?, quantidade_vendida = ?
+            WHERE id_venda = ?
+        ''', (venda.id_marmita, venda.data_de_venda, venda.quantidade_vendida, venda.ID))
+        conn.commit()
+        conn.close()
