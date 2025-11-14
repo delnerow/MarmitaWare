@@ -513,3 +513,55 @@ class GerenciadorBD():
         ''', (venda.id_marmita, venda.data_de_venda, venda.quantidade_vendida, venda.ID))
         conn.commit()
         conn.close()
+
+    def updateMarmitas(self, marmita: Marmita):
+        """Atualiza uma marmita existente no banco de dados"""
+        conn = sqlite3.connect(self.DATA_FILE)
+        cursor = conn.cursor()
+        cursor.execute('''
+            UPDATE Marmitas
+            SET nome_marmita = ?, preco_venda = ?, custo_estimado = ?
+            WHERE id_marmita = ?
+        ''', (marmita.nome, marmita.preco_venda, marmita.custo_estimado, marmita.ID))
+        conn.commit()
+        try:
+            # Primeiro remove todas as associações existentes dessa marmita
+            cursor.execute('DELETE FROM ingredientes_marmita WHERE id_marmita = ?', (marmita.ID,))
+
+            # Obter o dicionário de quantidades fornecido pela marmita (pode ter chaves numéricas ou string)
+            quantidade_map = getattr(marmita, 'quantidade_ingredientes', {}) or {}
+
+            # Se houver um dicionário de quantidades, inserir todas as entradas dele
+            if quantidade_map:
+                for key, quantidade in quantidade_map.items():
+                    # aceitar chaves como string ou int; tentar converter para int quando possível
+                    try:
+                        id_ing = int(key)
+                    except Exception:
+                        id_ing = key
+                    # pular entradas sem quantidade válida
+                    if quantidade is None:
+                        continue
+                    cursor.execute('''
+                    INSERT INTO ingredientes_marmita (id_marmita, id_ingrediente, quantidade)
+                    VALUES (?, ?, ?)
+                    ''', (marmita.ID, id_ing, quantidade))
+            else:
+                # Fallback: se não houver dicionário, usar lista de ingredientes (se existir)
+                if hasattr(marmita, 'ingredientes') and marmita.ingredientes:
+                    for id_ing in marmita.ingredientes:
+                        # tentar obter quantidade por chave int ou string
+                        quantidade = quantidade_map.get(id_ing, quantidade_map.get(str(id_ing), None))
+                        if quantidade is None:
+                            # sem quantidade, pular (evita inserir NULL em coluna NOT NULL)
+                            continue
+                        cursor.execute('''
+                            INSERT INTO ingredientes_marmita (id_marmita, id_ingrediente, quantidade)
+                            VALUES (?, ?, ?)
+                        ''', (marmita.ID, id_ing, quantidade))
+            conn.commit()
+        except sqlite3.IntegrityError as e:
+            conn.rollback()
+            raise e
+        
+        conn.close()

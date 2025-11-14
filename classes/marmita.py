@@ -34,15 +34,15 @@ class Marmita:
         self.quantidade_ingredientes = quantidade_ingredientes  # {ingrediente_ID: quantidade}
         self.custo_estimado = custo_estimado
 
-    def Editar(self, ingredientes: list = None, preco_venda: float = None, quantidade_ingredientes: dict = None, custo_estimado: float = None):
-        if ingredientes is not None:
-            self.ingredientes = ingredientes
+    def Editar(self, preco_venda: float = None, quantidade_ingredientes: dict = None, custo_estimado: float = None, nome_marmita: str = None):
         if preco_venda is not None:
             self.preco_venda = preco_venda
         if quantidade_ingredientes is not None:
             self.quantidade_ingredientes = quantidade_ingredientes
         if custo_estimado is not None:
             self.custo_estimado = custo_estimado
+        if nome_marmita is not None:
+            self.nome = nome_marmita
     
     def print_marmita(self):
         # para testes, apenas

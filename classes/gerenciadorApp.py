@@ -151,15 +151,61 @@ class GerenciadorApp():
         return compra
 
     def EditVendas(self, ID_venda: int, marmita_new: int = None, quantidade_new: int = None, data_new: date = None):
-        # Lógica para editar vendas na meméria
+        #verificações básicas
+        if ID_venda not in self.vendas:
+            raise ValueError("Venda não encontrada")
+        if marmita_new is not None and marmita_new not in self.marmitas:
+            raise ValueError("Marmita não encontrada")
+        if quantidade_new is not None and quantidade_new <= 0:
+            raise ValueError("Quantidade deve ser maior que zero")
+        if data_new is not None and not isinstance(data_new, date):
+            raise ValueError("Data inválida")
+        
+        # Lógica para editar vendas na memória
         self.vendas[ID_venda].editar(marmita_new, quantidade_new, data_new)
 
         # Atualiza no banco de dados
         self.gerenciadorBD.updateVendas(self.vendas[ID_venda])
 
-    def EditMarmita(self):
-        # Lógica para editar marmitas
-        pass
+    def EditMarmita(self, ID_marmita: int, nome_new: str = None, ingredientes_quantidades_new: dict = None, preco_venda_new: float = None):
+        # verificações básicas
+        if ID_marmita not in self.marmitas:
+            raise ValueError("Marmita não encontrada")
+
+        if nome_new is not None:
+            if not isinstance(nome_new, str) or not nome_new.strip():
+                raise ValueError("Nome inválido para a marmita")
+
+        custo_estimado = None
+        if ingredientes_quantidades_new is not None:
+            if not isinstance(ingredientes_quantidades_new, dict) or len(ingredientes_quantidades_new) == 0:
+                raise ValueError("ingredientes_quantidades deve ser um dicionário não vazio {id: quantidade}")
+            
+            custo_estimado = 0.0
+            for ing_id, qty in ingredientes_quantidades_new.items():
+                if ing_id not in self.ingredientes:
+                    raise ValueError(f"Ingrediente com ID {ing_id} não encontrado")
+                if not isinstance(qty, (int, float)) or qty <= 0:
+                    raise ValueError(f"Quantidade inválida para ingrediente {ing_id}")
+                ingrediente = self.ingredientes[ing_id]
+                preco_compra = getattr(ingrediente, "preco_compra", getattr(ingrediente, "preco", 0.0))
+                custo_estimado += preco_compra * qty
+
+        if preco_venda_new is not None:
+            if not isinstance(preco_venda_new, (int, float)) or preco_venda_new < 0:
+                raise ValueError("preco_venda inválido")
+
+        if nome_new is None and ingredientes_quantidades_new is None and preco_venda_new is None:
+            raise ValueError("Nenhuma alteração fornecida para a marmita")
+        
+        # edita a marmita na memória
+        self.marmitas[ID_marmita].Editar(preco_venda = preco_venda_new, quantidade_ingredientes = ingredientes_quantidades_new, custo_estimado = custo_estimado, nome_marmita = nome_new)
+
+
+        # persiste alteração no banco de dados
+        self.gerenciadorBD.updateMarmitas(self.marmitas[ID_marmita])
+
+    
 
     def EditIngrediente(self):
         # Lógica para editar ingredientes
