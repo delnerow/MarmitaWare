@@ -155,6 +155,13 @@ Marmitaware/
 - **Excluir**: Clique no botão vermelho "Excluir"
 - Veja margem de lucro calculada automaticamente
 
+### 1️⃣ Ingredientes
+
+- **Adicionar**: Clique em "Novo Ingrediente"
+- **Editar**: Clique no botão azul "Editar" no card do ingrediente
+- **Excluir**: Clique no botão vermelho "Excluir"
+- Veja o total de ingredientes cadastrados e seu preço médio
+
 ### 3️⃣ Vendas
 
 - **Registrar**: Clique em "Nova Venda"
