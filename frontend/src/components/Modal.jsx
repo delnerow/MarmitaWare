@@ -171,6 +171,23 @@ function Modal({ type, data, editingItem, onClose, onSubmit }) {
     orange: 'from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 focus:ring-orange-500'
   };
 
+// Cálculo do custo estimado da marmita
+const custoEstimado = Object.entries(formData.ingredientes_quantidades).reduce(
+  (total, [ingId, qtd]) => {
+    const ingrediente = data.ingredientes.find(i => i.id === parseInt(ingId));
+    if (!ingrediente) return total;
+    return total + (Number(qtd) * Number(ingrediente.preco_compra));
+  },
+  0
+);
+const precoVenda = Number(formData.preco_venda || 0);
+
+const margemLucro =
+  precoVenda > 0
+    ? ((precoVenda - custoEstimado) / precoVenda) * 100
+    : 0;
+
+  
   return (
     <div
       className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn"
@@ -325,9 +342,36 @@ function Modal({ type, data, editingItem, onClose, onSubmit }) {
                       Add
                     </button>
                   </div>
+                  {/* Resumo Financeiro da Marmita */}
+<div className="mt-6 p-4 bg-gray-50 border border-gray-200 rounded-xl">
+  <h4 className="font-semibold text-gray-800 mb-3">Resumo da Marmita</h4>
+
+  <div className="flex justify-between items-center py-1">
+    <span className="text-gray-600">Custo Estimado:</span>
+    <span className="font-bold text-red-600">
+      R$ {custoEstimado.toFixed(2)}
+    </span>
+  </div>
+
+  <div className="flex justify-between items-center py-1">
+    <span className="text-gray-600">Preço de Venda:</span>
+    <span className="font-bold text-blue-600">
+      R$ {precoVenda.toFixed(2)}
+    </span>
+  </div>
+
+  <div className="flex justify-between items-center py-1">
+    <span className="text-gray-600">Margem de Lucro:</span>
+    <span className={`font-bold ${margemLucro >= 0 ? "text-green-600" : "text-red-600"}`}>
+      {margemLucro.toFixed(1)}%
+    </span>
+  </div>
+</div>
+
                 </div>
               )}
             </>
+            
           )}
 
           {/* Formulário de Venda */}
